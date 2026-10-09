@@ -78,16 +78,16 @@ export function applySettingsEffects(addEffect: AddEffectFn) {
       const proToken = await preferenceService.getProToken();
       dispatch(setProToken(proToken));
 
-      if (!__DEV__) {
-        if (Platform.OS === 'ios') {
-          Purchases.configure({
-            apiKey: process.env.EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY!,
-          });
-        } else if (Platform.OS === 'android') {
-          Purchases.configure({
-            apiKey: process.env.EXPO_PUBLIC_REVENUECAT_GOOGLE_API_KEY!,
-          });
-        }
+      // Builds without the store's RevenueCat key (e.g. a personal fork) skip purchases entirely;
+      // configure() throws on a missing key, which would abort hydration and leave the app unusable.
+      const revenueCatApiKey =
+        Platform.OS === 'ios'
+          ? process.env.EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY
+          : Platform.OS === 'android'
+            ? process.env.EXPO_PUBLIC_REVENUECAT_GOOGLE_API_KEY
+            : undefined;
+      if (!__DEV__ && revenueCatApiKey) {
+        Purchases.configure({ apiKey: revenueCatApiKey });
       }
       // migrate pro token to a revenuecat
       if (proToken && !proToken.startsWith('$RCAnonymousID')) {

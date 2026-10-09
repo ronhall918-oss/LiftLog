@@ -92,8 +92,10 @@ class WorkoutWorkerModule : Module() {
         }
 
         Function("silenceRestAlarm") {
-            val context = appContext.reactContext ?: return@Function
-            WorkoutNotificationManager(context).clearRestNotification()
+            val context = appContext.reactContext
+            if (context != null) {
+                WorkoutNotificationManager(context).clearRestNotification()
+            }
         }
 
         Function("broadcast") { jsonString: String ->

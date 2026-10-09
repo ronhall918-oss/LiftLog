@@ -106,6 +106,9 @@ class WorkoutNotificationManager(private val context: Context) {
             .setOngoing(false)
             .setSilent(false)
             .setOnlyAlertOnce(true)
+            .setAutoCancel(true)
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
     }
 
 

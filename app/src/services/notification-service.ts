@@ -31,7 +31,8 @@ if (Platform.OS === 'android') {
   void setNotificationChannelAsync('rest_channel', {
     name: 'Rest Notifications',
     description: 'A notification alerting you that your rest is over',
-    importance: AndroidImportance.DEFAULT,
+    // High importance pops the alarm up as a banner, so it can be silenced with a tap.
+    importance: AndroidImportance.HIGH,
     enableVibrate: true,
     showBadge: true,
     lockscreenVisibility: AndroidNotificationVisibility.PUBLIC,

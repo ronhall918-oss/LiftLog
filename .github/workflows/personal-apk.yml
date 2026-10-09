@@ -1,0 +1,58 @@
+# Builds an installable APK of this personal fork. It uses a separate app ID
+# (com.ronhall918.liftlog) so it installs alongside the official LiftLog.
+name: Personal APK
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore: [main]
+    paths:
+      - app/**
+      - .github/workflows/personal-apk.yml
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: ./app/package-lock.json
+
+      - name: Setup JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Setup Android SDK Tools
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+
+      - name: Install
+        run: npm ci
+        working-directory: ./app
+
+      - name: Prebuild
+        run: npm run prebuild
+        working-directory: ./app
+
+      # Without upload-key properties the release build is signed with the debug keystore that
+      # prebuild generates from the template. That key is the same on every run, so each new APK
+      # installs over the last one and keeps your data. The run number keeps versionCode increasing.
+      - name: Build APK
+        run: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a -PBUILD_NUMBER=${{ github.run_number }}
+        working-directory: ./app/android
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: liftlog-apk-${{ github.run_number }}
+          path: app/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error

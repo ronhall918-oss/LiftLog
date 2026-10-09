@@ -3,20 +3,26 @@ import {
   RestTimerControlsProps,
   restControlIconSize,
 } from '@/components/presentation/workout/rest-timer-controls-props';
-import { FilledIconToggleButton, Host, Icon, IconButton, Row } from '@expo/ui/jetpack-compose';
+import { FilledIconButton, FilledIconToggleButton, Host, Icon, IconButton, Row } from '@expo/ui/jetpack-compose';
 import { useTranslate } from '@tolgee/react';
 import RestartIcon from '@expo/material-symbols/replay.xml';
 import PauseIcon from '@expo/material-symbols/pause.xml';
 import ResumeIcon from '@expo/material-symbols/play_arrow.xml';
 import DismissIcon from '@expo/material-symbols/close.xml';
+import SilenceIcon from '@expo/material-symbols/notifications_off.xml';
 
-export function RestTimerControls({ paused, onRestart, onTogglePause, onDismiss }: RestTimerControlsProps) {
+export function RestTimerControls({ paused, onRestart, onTogglePause, onDismiss, onSilence }: RestTimerControlsProps) {
   const { colors } = useAppTheme();
   const { t } = useTranslate();
 
   return (
     <Host matchContents seedColor={colors.seedColor} colorScheme={colors.scheme}>
       <Row horizontalArrangement={{ spacedBy: spacing[1] }} verticalAlignment="center">
+        {onSilence && (
+          <FilledIconButton colors={{ containerColor: colors.red, contentColor: colors.onRed }} onClick={onSilence}>
+            <Icon source={SilenceIcon} size={restControlIconSize} contentDescription={t('rest_timer.silence')} />
+          </FilledIconButton>
+        )}
         <IconButton colors={{ contentColor: colors.onSurface }} onClick={onRestart}>
           <Icon source={RestartIcon} size={restControlIconSize} contentDescription={t('rest_timer.restart')} />
         </IconButton>

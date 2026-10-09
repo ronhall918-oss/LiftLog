@@ -15,13 +15,21 @@ const controlPadding = padding({ horizontal: spacing[1], vertical: spacing[1] })
 // alone lets `arrow.counterclockwise` outgrow `xmark`. Squaring off the icon keeps the pucks equal.
 const iconFrame = frame({ width: restControlIconSize, height: restControlIconSize });
 
-export function RestTimerControls({ paused, onRestart, onTogglePause, onDismiss }: RestTimerControlsProps) {
+export function RestTimerControls({ paused, onRestart, onTogglePause, onDismiss, onSilence }: RestTimerControlsProps) {
   const { colors } = useAppTheme();
   const { t } = useTranslate();
 
   return (
     <Host matchContents seedColor={colors.seedColor} colorScheme={colors.scheme}>
       <HStack alignment="center">
+        {onSilence && (
+          <Button
+            onPress={onSilence}
+            modifiers={[buttonStyle('glassProminent'), controlPadding, accessibilityLabel(t('rest_timer.silence'))]}
+          >
+            <Image systemName="bell.slash.fill" size={restControlIconSize} modifiers={[iconFrame]} />
+          </Button>
+        )}
         <Button
           onPress={onRestart}
           modifiers={[buttonStyle('glass'), controlPadding, accessibilityLabel(t('rest_timer.restart'))]}

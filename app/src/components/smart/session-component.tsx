@@ -1,6 +1,7 @@
 import { showSnackbar } from '@/store/app';
 import { Card, Icon, Text } from 'react-native-paper';
 import { useDispatch } from 'react-redux';
+import { silenceRestAlarm } from '@/store/workout-worker';
 import { View } from 'react-native';
 import EmptyInfo from '@/components/presentation/foundation/empty-info';
 import { useAppTheme, spacing, font } from '@/hooks/useAppTheme';
@@ -237,6 +238,7 @@ export default function SessionComponent(props: {
       onRestart={() => resetTimer(OffsetDateTime.now())}
       onDismiss={dismissTimer}
       onTogglePause={toggleRestTimerPaused}
+      onSilence={() => dispatch(silenceRestAlarm())}
     />
   ) : undefined;
 

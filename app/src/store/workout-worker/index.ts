@@ -6,6 +6,8 @@ export const clearSetTimerNotification = createAction('clearSetTimerNotification
 
 export const notifySetTimer = createAction('notifySetTimer');
 
+export const silenceRestAlarm = createAction('silenceRestAlarm');
+
 export const broadcastWorkoutEvent = createAction<WorkoutMessage['payload']>('broadcastWorkoutEvent');
 
 export const activeSessionUpdated = createAction<{

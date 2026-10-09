@@ -1015,10 +1015,11 @@ export const Rest = {
     maxRest: Duration.ofSeconds(90),
     failureRest: Duration.ofSeconds(180),
   },
+  // The default for new exercises: one fixed 2 minute rest, with no separate max or failure rest.
   medium: {
-    minRest: Duration.ofSeconds(90),
-    maxRest: Duration.ofSeconds(180),
-    failureRest: Duration.ofSeconds(300),
+    minRest: Duration.ofMinutes(2),
+    maxRest: Duration.ofMinutes(2),
+    failureRest: Duration.ofMinutes(2),
   },
   long: {
     minRest: Duration.ofMinutes(3),

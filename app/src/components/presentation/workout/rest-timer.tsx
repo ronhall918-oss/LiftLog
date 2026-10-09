@@ -18,6 +18,7 @@ interface RestTimerProps {
   onRestart: () => void;
   onDismiss: () => void;
   onTogglePause: () => void;
+  onSilence: () => void;
 }
 
 type RestPhase = 'resting' | 'ready' | 'over';
@@ -25,7 +26,7 @@ type RestPhase = 'resting' | 'ready' | 'over';
 const phaseColor: Record<RestPhase, ColorChoice> = {
   resting: 'onSurfaceVariant',
   ready: 'green',
-  over: 'orange',
+  over: 'red',
 };
 
 export default function RestTimer({
@@ -37,10 +38,13 @@ export default function RestTimer({
   onRestart,
   onDismiss,
   onTogglePause,
+  onSilence,
 }: RestTimerProps) {
   const { t } = useTranslate();
   const paused = pausedAt !== undefined;
   const [jiggled, setJiggled] = useDerivedState(startTime, () => [] as string[]);
+  // The alarm rings when rest first reaches 'ready' and again at 'over', so silencing is per phase.
+  const [silencedPhase, setSilencedPhase] = useDerivedState(startTime, () => undefined as RestPhase | undefined);
 
   const getTimerState = useCallback(() => {
     const now = pausedAt ?? OffsetDateTime.now();
@@ -105,6 +109,7 @@ export default function RestTimer({
   }, [getTimerState, triggerJiggle]);
 
   const { phase, windowStart, windowEnd } = timerState;
+  const alarmRinging = !paused && phase !== 'resting' && silencedPhase !== phase;
   const accent = phaseColor[phase];
 
   const status = paused
@@ -150,6 +155,14 @@ export default function RestTimer({
           }}
           onTogglePause={onTogglePause}
           onDismiss={onDismiss}
+          onSilence={
+            alarmRinging
+              ? () => {
+                  onSilence();
+                  setSilencedPhase(phase);
+                }
+              : undefined
+          }
         />
       }
     />

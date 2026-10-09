@@ -15,6 +15,7 @@ import {
   broadcastWorkoutEvent,
   clearSetTimerNotification,
   notifySetTimer,
+  silenceRestAlarm,
 } from '@/store/workout-worker';
 import { workoutUpdatedEvent } from '@/store/workout-worker/helpers';
 import { OffsetDateTime } from '@js-joda/core';
@@ -73,6 +74,10 @@ export function applyWorkoutWorkerEffects(addEffect: AddEffectFn) {
 
   addEffect(broadcastWorkoutEvent, (action, { extra: { workoutWorkerService } }) => {
     workoutWorkerService.broadcast(action.payload);
+  });
+
+  addEffect(silenceRestAlarm, (_, { extra: { workoutWorkerService } }) => {
+    workoutWorkerService.silenceRestAlarm();
   });
 
   addEffect(clearSetTimerNotification, async (_, { extra: { notificationService } }) => {

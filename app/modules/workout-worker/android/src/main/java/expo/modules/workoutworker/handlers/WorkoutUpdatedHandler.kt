@@ -40,12 +40,22 @@ class WorkoutUpdatedHandler(
     // outlive it - otherwise a set left running past its target re-announces on every update.
     private var announcedCardioTarget: Pair<Int, Int>? = null
 
+    // The rest alarm rings until silenced, so a new rest (next set logged, timer reset, paused or
+    // dismissed) has to stop the one that is still ringing for the previous rest.
+    private var lastRestStartedAt: Long? = null
+
     override suspend fun handle(
         event: WorkoutMessage,
         dispatch: (type: String, event: WorkoutMessage) -> Unit
     ) {
         try {
             val workoutUpdatedEvent = event.payload as WorkoutUpdatedEvent
+
+            val restStartedAt = workoutUpdatedEvent.restTimerInfo?.startedAt?.epochSeconds
+            if (restStartedAt != lastRestStartedAt) {
+                lastRestStartedAt = restStartedAt
+                notificationManager.clearRestNotification()
+            }
 
             when {
                 workoutUpdatedEvent.restTimerInfo != null -> showRestTimerNotification(event.translations, workoutUpdatedEvent)
@@ -137,12 +147,10 @@ class WorkoutUpdatedHandler(
                 else -> null
             }
             if (restNotif != null) {
+                // Repeat the sound and vibration until the user silences it: from the app, by
+                // tapping or swiping the notification, or by opening the notification shade.
+                restNotif.flags = restNotif.flags or Notification.FLAG_INSISTENT
                 notificationManager.notifyRest(restNotif)
-
-                MainScope().launch {
-                    delay(10_000)
-                    notificationManager.clearRestNotification()
-                }
             }
             @Suppress("AssignedValueIsNeverRead")
             previousProgress = progress

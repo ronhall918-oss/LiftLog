@@ -11,5 +11,8 @@ public class WorkoutWorkerModule: Module {
     Function("broadcast") { (jsonString: String) in
 
     }
+
+    // iOS rest notifications sound once, so there is nothing to silence.
+    Function("silenceRestAlarm") {}
   }
 }

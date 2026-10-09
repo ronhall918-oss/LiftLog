@@ -14,6 +14,7 @@ import com.limajuice.liftlog.WorkoutStartedEvent
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import expo.modules.workoutworker.utils.Json
+import expo.modules.workoutworker.utils.WorkoutNotificationManager
 import java.lang.ref.WeakReference
 
 class WorkoutWorkerModule : Module() {
@@ -88,6 +89,11 @@ class WorkoutWorkerModule : Module() {
 
         OnDestroy {
             unbindIfNeeded()
+        }
+
+        Function("silenceRestAlarm") {
+            val context = appContext.reactContext ?: return@Function
+            WorkoutNotificationManager(context).clearRestNotification()
         }
 
         Function("broadcast") { jsonString: String ->

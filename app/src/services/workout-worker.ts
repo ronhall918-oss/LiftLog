@@ -32,6 +32,11 @@ export class WorkoutWorker {
     );
   }
 
+  /** Stops the rest alarm from ringing, leaving the rest timer running. */
+  silenceRestAlarm() {
+    WorkoutWorkerModule.silenceRestAlarm();
+  }
+
   private getAppConfigurationMessage(): AppConfiguration {
     return {
       notificationsEnabled: this.getState().settings.restNotifications,

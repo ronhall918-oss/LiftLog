@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { LocalDate } from '@js-joda/core';
-import { SessionBlueprint } from '@/models/blueprint-models';
+import { Rest, SessionBlueprint } from '@/models/blueprint-models';
 import { Session } from '@/models/session-models/session';
 import { RestTimer } from '@/models/session-models/rest-timer';
 import { RecordedCardioExercise } from '@/models/session-models/recorded-cardio-exercise';
@@ -105,6 +105,8 @@ describe('getTimerInfo', () => {
   function sessionWithPyramidRestTimer(lastSetReps: number) {
     const bp = makeWeightedBlueprint().with({
       sets: 3,
+      // A ranged rest, so a success (min to max) is distinguishable from a failure (failure rest only).
+      restBetweenSets: Rest.long,
       repsConfig: {
         type: 'perSet',
         targets: [

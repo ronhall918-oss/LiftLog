@@ -93,4 +93,6 @@ export interface Translations {
 
 export interface AppConfiguration {
   notificationsEnabled: boolean;
+  /** The phone's Clock app rings the rest alarm, so the worker must not ring its own. */
+  useClockAppForRestAlarm?: boolean;
 }

@@ -4,6 +4,7 @@ import { SerializedWorkoutEventPayload, WorkoutWorkerModuleEvents } from './Work
 declare class WorkoutWorkerModule extends NativeModule<WorkoutWorkerModuleEvents> {
   broadcast(string: SerializedWorkoutEventPayload['jsonString']): void;
   silenceRestAlarm(): void;
+  startClockTimer(seconds: number, message: string): void;
 }
 
 // This call loads the native module object from the JSI.

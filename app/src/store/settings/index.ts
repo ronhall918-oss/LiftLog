@@ -89,6 +89,7 @@ export const {
   setShowFeed,
   setRestNotifications,
   setRestTimersEnabled,
+  setUseClockAppForRestAlarm,
   setCrashReportsEnabled,
   setWelcomeWizardCompleted,
   setBackupIncludeFeedAccount,

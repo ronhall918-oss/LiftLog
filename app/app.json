@@ -64,6 +64,7 @@
       "softwareKeyboardLayoutMode": "pan",
       "permissions": [
         "com.android.vending.BILLING",
+        "com.android.alarm.permission.SET_ALARM",
         "android.permission.health.WRITE_WEIGHT",
         "android.permission.health.WRITE_EXERCISE",
         "android.permission.health.WRITE_EXERCISE_ROUTE"

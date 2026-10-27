@@ -4,6 +4,7 @@ import { RootState } from '@/store';
 import { selectActiveSessionId, sessionFinished } from '@/store/stored-sessions';
 import { Dispatch } from '@reduxjs/toolkit';
 import { TolgeeInstance, TranslationKey } from '@tolgee/react';
+import { Platform } from 'react-native';
 
 export class WorkoutWorker {
   private readonly listeners = new Map<WorkoutMessage['payload']['type'], ((e: WorkoutMessage['payload']) => void)[]>();
@@ -40,6 +41,7 @@ export class WorkoutWorker {
   private getAppConfigurationMessage(): AppConfiguration {
     return {
       notificationsEnabled: this.getState().settings.restNotifications,
+      useClockAppForRestAlarm: Platform.OS === 'android' && this.getState().settings.useClockAppForRestAlarm,
     };
   }
 

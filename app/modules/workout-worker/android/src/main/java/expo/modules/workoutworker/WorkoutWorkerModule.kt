@@ -1,10 +1,12 @@
 package expo.modules.workoutworker
 
+import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
+import android.provider.AlarmClock
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
@@ -95,6 +97,24 @@ class WorkoutWorkerModule : Module() {
             val context = appContext.reactContext
             if (context != null) {
                 WorkoutNotificationManager(context).clearRestNotification()
+            }
+        }
+
+        // Starts a countdown in the phone's Clock app, which then rings its own alarm (full screen
+        // over the lock screen) when rest is up. Clock apps offer no way to cancel it again.
+        Function("startClockTimer") { seconds: Int, message: String ->
+            val intent = Intent(AlarmClock.ACTION_SET_TIMER)
+                .putExtra(AlarmClock.EXTRA_LENGTH, seconds)
+                .putExtra(AlarmClock.EXTRA_MESSAGE, message)
+                .putExtra(AlarmClock.EXTRA_SKIP_UI, true)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            val context: Context? = appContext.currentActivity ?: appContext.reactContext
+            if (context != null) {
+                try {
+                    context.startActivity(intent)
+                } catch (e: ActivityNotFoundException) {
+                    Log.w("WorkoutWorker", "No Clock app can set timers", e)
+                }
             }
         }
 

@@ -44,12 +44,16 @@ class WorkoutUpdatedHandler(
     // dismissed) has to stop the one that is still ringing for the previous rest.
     private var lastRestStartedAt: Long? = null
 
+    // When the phone's Clock app timer rings for rest, this worker only shows the countdown.
+    private var useClockAppForRestAlarm = false
+
     override suspend fun handle(
         event: WorkoutMessage,
         dispatch: (type: String, event: WorkoutMessage) -> Unit
     ) {
         try {
             val workoutUpdatedEvent = event.payload as WorkoutUpdatedEvent
+            useClockAppForRestAlarm = event.appConfiguration.useClockAppForRestAlarm == true
 
             val restStartedAt = workoutUpdatedEvent.restTimerInfo?.startedAt?.epochSeconds
             if (restStartedAt != lastRestStartedAt) {
@@ -150,7 +154,7 @@ class WorkoutUpdatedHandler(
 
                 else -> null
             }
-            if (restNotif != null) {
+            if (restNotif != null && !useClockAppForRestAlarm) {
                 notificationManager.notifyRest(restNotif)
             }
             @Suppress("AssignedValueIsNeverRead")

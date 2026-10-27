@@ -18,7 +18,7 @@ interface RestTimerProps {
   onRestart: () => void;
   onDismiss: () => void;
   onTogglePause: () => void;
-  onSilence: () => void;
+  onSilence?: () => void;
 }
 
 type RestPhase = 'resting' | 'over';
@@ -90,7 +90,7 @@ export default function RestTimer({
   }, [getTimerState, triggerJiggle]);
 
   const { phase } = timerState;
-  const alarmRinging = !paused && phase !== 'resting' && silencedPhase !== phase;
+  const alarmRinging = !!onSilence && !paused && phase !== 'resting' && silencedPhase !== phase;
   const accent = phaseColor[phase];
 
   const status = paused
@@ -122,7 +122,7 @@ export default function RestTimer({
           onSilence={
             alarmRinging
               ? () => {
-                  onSilence();
+                  onSilence?.();
                   setSilencedPhase(phase);
                 }
               : undefined

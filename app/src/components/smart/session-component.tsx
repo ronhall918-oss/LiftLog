@@ -2,7 +2,7 @@ import { showSnackbar } from '@/store/app';
 import { Card, Icon, Text } from 'react-native-paper';
 import { useDispatch } from 'react-redux';
 import { silenceRestAlarm } from '@/store/workout-worker';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 import EmptyInfo from '@/components/presentation/foundation/empty-info';
 import { useAppTheme, spacing, font } from '@/hooks/useAppTheme';
 import { T, useTranslate } from '@tolgee/react';
@@ -60,6 +60,8 @@ export default function SessionComponent(props: {
   const { t } = useTranslate();
   const { push } = useRouter();
   const restTimersEnabled = useAppSelector((x) => x.settings.restTimersEnabled);
+  // When the Clock app rings the rest alarm, it is silenced there, not here.
+  const clockAppRingsRestAlarm = useAppSelector((x) => Platform.OS === 'android' && x.settings.useClockAppForRestAlarm);
   const dispatch = useDispatch();
   const isReadonly = !props.updateSession;
   const editableSessionId = isReadonly ? undefined : session.id;
@@ -238,7 +240,7 @@ export default function SessionComponent(props: {
       onRestart={() => resetTimer(OffsetDateTime.now())}
       onDismiss={dismissTimer}
       onTogglePause={toggleRestTimerPaused}
-      onSilence={() => dispatch(silenceRestAlarm())}
+      onSilence={clockAppRingsRestAlarm ? undefined : () => dispatch(silenceRestAlarm())}
     />
   ) : undefined;
 

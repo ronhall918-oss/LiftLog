@@ -62,6 +62,8 @@ export const preferenceRegistry = {
   showFeed: pref({ default: true, codec: boolCodec }),
   restNotifications: pref({ default: true, codec: boolCodec }),
   restTimersEnabled: pref({ default: true, codec: boolCodec }),
+  // Android: ring the phone's Clock app timer when rest is up instead of LiftLog's own alarm.
+  useClockAppForRestAlarm: pref({ default: true, codec: boolCodec }),
   crashReportsEnabled: pref({ default: true, codec: boolCodec }),
   welcomeWizardCompleted: pref({ default: false, codec: boolCodec }),
   notesExpandedByDefault: pref({ default: true, codec: boolCodec }),

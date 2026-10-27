@@ -4,6 +4,9 @@
   "properties": {
     "notificationsEnabled": {
       "type": "boolean"
+    },
+    "useClockAppForRestAlarm": {
+      "type": "boolean"
     }
   },
   "required": [

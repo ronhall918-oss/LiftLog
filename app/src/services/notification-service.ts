@@ -1,5 +1,5 @@
 import { RootState } from '@/store';
-import { OffsetDateTime } from '@js-joda/core';
+import { Duration, OffsetDateTime } from '@js-joda/core';
 import { Dispatch } from '@reduxjs/toolkit';
 import {
   AndroidImportance,
@@ -8,6 +8,7 @@ import {
   setNotificationHandler,
 } from 'expo-notifications';
 import { Platform } from 'react-native';
+import WorkoutWorkerModule from '~/modules/workout-worker/src/WorkoutWorkerModule';
 
 setNotificationHandler({
   handleNotification: async () => ({
@@ -41,15 +42,33 @@ if (Platform.OS === 'android') {
 }
 /**
  * Notification service is used for displaying dumb notifications through expo notifications
- * Only relevant for iOS, android uses richer notifications via WorkoutWorker
+ * on iOS; android uses richer notifications via WorkoutWorker. On android it can instead hand
+ * the rest alarm to the phone's Clock app, which rings over the lock screen like any timer.
  */
 export class NotificationService {
+  // Rest timers are re-announced whenever the session changes; only start one Clock timer per rest.
+  private lastClockTimerEnd: OffsetDateTime | undefined;
+
   constructor(
     readonly getState: () => RootState,
     readonly dispatch: Dispatch,
   ) {}
 
-  async scheduleNextSetNotification(_time: OffsetDateTime) {}
+  async scheduleNextSetNotification(time: OffsetDateTime) {
+    if (Platform.OS !== 'android' || !this.getState().settings.useClockAppForRestAlarm) {
+      return;
+    }
+    if (this.lastClockTimerEnd?.isEqual(time)) {
+      return;
+    }
+    const seconds = Math.round(Duration.between(OffsetDateTime.now(), time).toMillis() / 1000);
+    if (seconds < 1) {
+      return;
+    }
+    this.lastClockTimerEnd = time;
+    // The Clock app owns the timer from here: LiftLog has no way to cancel it.
+    WorkoutWorkerModule.startClockTimer(seconds, 'LiftLog rest');
+  }
 
   async clearSetTimerNotification() {}
 }

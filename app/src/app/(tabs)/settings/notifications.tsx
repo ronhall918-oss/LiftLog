@@ -2,7 +2,8 @@ import { RootState, useAppSelector } from '@/store';
 import { broadcastWorkoutEvent } from '@/store/workout-worker';
 import { workoutUpdatedEvent } from '@/store/workout-worker/helpers';
 import { selectActiveSession } from '@/store/stored-sessions';
-import { setRestNotifications, setRestTimersEnabled } from '@/store/settings';
+import { setRestNotifications, setRestTimersEnabled, setUseClockAppForRestAlarm } from '@/store/settings';
+import { Platform } from 'react-native';
 import { useTranslate } from '@tolgee/react';
 import { useDispatch } from 'react-redux';
 import { SettingsPage } from '@/components/layout/settings-page';
@@ -42,6 +43,15 @@ export default function NotificationsPage() {
           value={settings.restTimersEnabled}
           onValueChange={(value) => dispatch(setRestTimersEnabled(value))}
         />
+        {Platform.OS === 'android' && (
+          <SegmentedListSwitch
+            label={t('rest.clock_app_alarm.title')}
+            icon={'timer'}
+            supportingText={t('rest.clock_app_alarm.subtitle')}
+            value={settings.useClockAppForRestAlarm}
+            onValueChange={(value) => dispatch(setUseClockAppForRestAlarm(value))}
+          />
+        )}
       </SegmentedGroup>
     </SettingsPage>
   );

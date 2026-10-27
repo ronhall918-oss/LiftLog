@@ -41,6 +41,8 @@ export function RestEditorDialog(props: RestEditorDialogProps) {
   };
 
   const updateRest = (type: keyof Rest) => (duration: Duration) => onRestUpdated({ ...rest, [type]: duration });
+  // Rest is a single countdown, so max rest just mirrors it.
+  const updateMainRest = (duration: Duration) => onRestUpdated({ ...rest, minRest: duration, maxRest: duration });
 
   const customView = (
     <View
@@ -50,8 +52,7 @@ export function RestEditorDialog(props: RestEditorDialogProps) {
         gap: spacing[2],
       }}
     >
-      <DurationEditor label={t('rest.min.label')} duration={rest.minRest} onDurationUpdated={updateRest('minRest')} />
-      <DurationEditor label={t('rest.max.label')} duration={rest.maxRest} onDurationUpdated={updateRest('maxRest')} />
+      <DurationEditor label={t('rest.rest.label')} duration={rest.minRest} onDurationUpdated={updateMainRest} />
       <DurationEditor
         label={t('rest.failure.label')}
         duration={rest.failureRest}

@@ -2,12 +2,16 @@ package expo.modules.workoutworker.utils
 
 import android.app.Notification
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import androidx.annotation.DrawableRes
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE
 import androidx.core.app.NotificationManagerCompat
 import expo.modules.workoutworker.R
+import expo.modules.workoutworker.RestAlarmActivity
+import expo.modules.workoutworker.RestAlarmSilenceReceiver
 import expo.modules.workoutworker.WorkoutConstants.getLaunchAppAtWorkoutPagePendingIntent
 import expo.modules.workoutworker.WorkoutConstants.getLiveUpdateDeleteIntent
 
@@ -34,6 +38,8 @@ class WorkoutNotificationManager(private val context: Context) {
     companion object {
         const val PERSISTENT_NOTIFICATION_ID = 123
         const val REST_NOTIFICATION_ID = 1234
+        private const val REST_ALARM_REQUEST_CODE = 1
+        private const val REST_SILENCE_REQUEST_CODE = 2
 
         const val PERSISTENT_CHANNEL_ID = "workout_channel"
         const val REST_CHANNEL_ID = "rest_channel"
@@ -111,6 +117,42 @@ class WorkoutNotificationManager(private val context: Context) {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
     }
 
+
+    /**
+     * The "rest is over" alarm. It rings until silenced (FLAG_INSISTENT), opens a full-screen alarm
+     * over the lock screen, stays pinned as a heads-up banner while the phone is in use, and carries
+     * a Silence action that works without unlocking.
+     */
+    fun createRestAlarmNotification(title: String, restEndEpochMs: Long): Notification {
+        val alarmIntent = Intent(context, RestAlarmActivity::class.java)
+            .putExtra(RestAlarmActivity.EXTRA_TITLE, title)
+            .putExtra(RestAlarmActivity.EXTRA_REST_END_MS, restEndEpochMs)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_USER_ACTION)
+        val fullScreenIntent = PendingIntent.getActivity(
+            context,
+            REST_ALARM_REQUEST_CODE,
+            alarmIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val silenceIntent = PendingIntent.getBroadcast(
+            context,
+            REST_SILENCE_REQUEST_CODE,
+            Intent(context, RestAlarmSilenceReceiver::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val notification = createRestNotificationBuilder()
+            .setContentTitle(title)
+            .setFullScreenIntent(fullScreenIntent, true)
+            .addAction(0, "Silence", silenceIntent)
+            .build()
+        notification.flags = notification.flags or Notification.FLAG_INSISTENT
+        return notification
+    }
+
+    fun isRestNotificationActive(): Boolean {
+        val manager = context.getSystemService(NotificationManager::class.java)
+        return manager.activeNotifications.any { it.id == REST_NOTIFICATION_ID }
+    }
 
     fun notifyPersistent(notification: android.app.Notification) {
         val manager = context.getSystemService(NotificationManager::class.java)

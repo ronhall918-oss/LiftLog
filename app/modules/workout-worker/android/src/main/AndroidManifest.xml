@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <application>
         <service
@@ -16,6 +17,21 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Workout tracking from a persistent notification but we don't need to read any sensors so the type HEALTH can not apply" />
         </service>
+
+        <!-- The rest-over alarm screen, shown over the lock screen like a clock alarm. -->
+        <activity
+            android:name=".RestAlarmActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:showWhenLocked="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.DeviceDefault.NoActionBar"
+            android:turnScreenOn="true" />
+
+        <receiver
+            android:name=".RestAlarmSilenceReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>

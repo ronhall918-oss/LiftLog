@@ -21,11 +21,10 @@ interface RestTimerProps {
   onSilence: () => void;
 }
 
-type RestPhase = 'resting' | 'ready' | 'over';
+type RestPhase = 'resting' | 'over';
 
 const phaseColor: Record<RestPhase, ColorChoice> = {
   resting: 'onSurfaceVariant',
-  ready: 'green',
   over: 'red',
 };
 
@@ -43,44 +42,27 @@ export default function RestTimer({
   const { t } = useTranslate();
   const paused = pausedAt !== undefined;
   const [jiggled, setJiggled] = useDerivedState(startTime, () => [] as string[]);
-  // The alarm rings when rest first reaches 'ready' and again at 'over', so silencing is per phase.
+  // Silencing is remembered per phase, so a timer reset (new startTime) brings the button back.
   const [silencedPhase, setSilencedPhase] = useDerivedState(startTime, () => undefined as RestPhase | undefined);
 
   const getTimerState = useCallback(() => {
     const now = pausedAt ?? OffsetDateTime.now();
     const elapsed = Duration.between(startTime, now).toMillis();
-    // A failed set earns a single, longer rest, and a fixed rest has min === max. Both are a
-    // target rather than a window, so they have no second segment to fill.
-    const windowStart = (failed ? rest.failureRest : rest.minRest).toMillis();
-    const windowEnd = failed || rest.minRest.equals(rest.maxRest) ? undefined : rest.maxRest.toMillis();
+    // Rest is a single target (failure rest after a failed set, otherwise min rest); max rest is
+    // ignored, so the timer counts down once and then counts up the overtime.
+    const target = (failed ? rest.failureRest : rest.minRest).toMillis();
 
-    if (elapsed < windowStart) {
+    if (elapsed < target) {
       return {
         phase: 'resting' as const,
-        windowStart,
-        windowEnd,
-        remaining: formatTimeSpan(windowStart - elapsed),
-        restProgress: elapsed / windowStart,
-        windowProgress: 0,
-      };
-    }
-    if (windowEnd !== undefined && elapsed < windowEnd) {
-      return {
-        phase: 'ready' as const,
-        windowStart,
-        windowEnd,
-        remaining: formatTimeSpan(windowEnd - elapsed),
-        restProgress: 1,
-        windowProgress: (elapsed - windowStart) / (windowEnd - windowStart),
+        remaining: formatTimeSpan(target - elapsed),
+        restProgress: elapsed / target,
       };
     }
     return {
       phase: 'over' as const,
-      windowStart,
-      windowEnd,
-      remaining: `+${formatTimeSpan(elapsed - (windowEnd ?? windowStart))}`,
+      remaining: `+${formatTimeSpan(elapsed - target)}`,
       restProgress: 1,
-      windowProgress: 1,
     };
   }, [startTime, pausedAt, rest, failed]);
 
@@ -102,13 +84,12 @@ export default function RestTimer({
     const timer = setInterval(() => {
       const state = getTimerState();
       setTimerState(state);
-      if (state.phase !== 'resting') triggerJiggle('ready');
       if (state.phase === 'over') triggerJiggle('over');
     }, 200);
     return () => clearInterval(timer);
   }, [getTimerState, triggerJiggle]);
 
-  const { phase, windowStart, windowEnd } = timerState;
+  const { phase } = timerState;
   const alarmRinging = !paused && phase !== 'resting' && silencedPhase !== phase;
   const accent = phaseColor[phase];
 
@@ -116,26 +97,9 @@ export default function RestTimer({
     ? t('rest_timer.status.paused')
     : phase === 'resting'
       ? t('rest_timer.status.resting')
-      : phase === 'ready'
-        ? t('rest_timer.status.ready')
-        : t('rest_timer.status.over');
+      : t('rest_timer.status.over');
 
-  const segments: TimerSegment[] = [
-    {
-      flex: windowStart,
-      progress: timerState.restProgress,
-      color: phase === 'over' && windowEnd === undefined ? phaseColor['over'] : phaseColor['resting'],
-    },
-    ...(windowEnd !== undefined
-      ? [
-          {
-            flex: windowEnd - windowStart,
-            progress: timerState.windowProgress,
-            color: phaseColor[phase],
-          },
-        ]
-      : []),
-  ];
+  const segments: TimerSegment[] = [{ flex: 1, progress: timerState.restProgress, color: phaseColor[phase] }];
 
   return (
     <TimerPane

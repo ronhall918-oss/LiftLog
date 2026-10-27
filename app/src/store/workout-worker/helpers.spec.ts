@@ -105,7 +105,7 @@ describe('getTimerInfo', () => {
   function sessionWithPyramidRestTimer(lastSetReps: number) {
     const bp = makeWeightedBlueprint().with({
       sets: 3,
-      // A ranged rest, so a success (min to max) is distinguishable from a failure (failure rest only).
+      // Failure rest differs from min rest, so a success is distinguishable from a failure.
       restBetweenSets: Rest.long,
       repsConfig: {
         type: 'perSet',
@@ -130,10 +130,12 @@ describe('getTimerInfo', () => {
 
   it("judges rest against the last completed set's own pyramid target", () => {
     // Last completed set targets 8; hitting it is a success even though it is below the earlier sets' targets.
+    // Rest is a single target either way, but a failure earns the longer failure rest.
     const success = getTimerInfo(sessionWithPyramidRestTimer(8))!;
-    expect(success.partiallyEndAt).not.toEqual(success.endAt);
+    expect(success.partiallyEndAt).toEqual(success.endAt);
 
     const failure = getTimerInfo(sessionWithPyramidRestTimer(7))!;
     expect(failure.partiallyEndAt).toEqual(failure.endAt);
+    expect(failure.endAt).not.toEqual(success.endAt);
   });
 });

@@ -29,8 +29,16 @@ object WorkoutConstants {
     fun Context.getLaunchAppAtWorkoutPagePendingIntent(
         message: WorkoutMessage? = null
     ): PendingIntent {
+        return PendingIntent.getActivity(
+            this,
+            0,
+            getLaunchAppAtWorkoutPageIntent(message),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
 
-        val intent = Intent(Intent.ACTION_MAIN).apply {
+    fun Context.getLaunchAppAtWorkoutPageIntent(message: WorkoutMessage? = null): Intent {
+        return Intent(Intent.ACTION_MAIN).apply {
             component = android.content.ComponentName(
                 packageName,
                 "$packageName.MainActivity"
@@ -55,13 +63,6 @@ object WorkoutConstants {
                         Intent.FLAG_ACTIVITY_SINGLE_TOP
             )
         }
-
-        return PendingIntent.getActivity(
-            this,
-            0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
     }
 
 }

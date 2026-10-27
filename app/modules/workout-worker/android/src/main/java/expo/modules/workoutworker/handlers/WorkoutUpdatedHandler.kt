@@ -136,20 +136,21 @@ class WorkoutUpdatedHandler(
 
 
             val restNotif: Notification? = when {
-                partialProgressMax in (previousProgress + 1)..progress && partialProgressMax != 0L -> notificationManager.createRestNotificationBuilder()
-                    .setContentTitle(translations.workoutPersistentNotificationMinRestOverMessage)
-                    .build()
+                partialProgressMax in (previousProgress + 1)..progress && partialProgressMax != 0L ->
+                    notificationManager.createRestAlarmNotification(
+                        translations.workoutPersistentNotificationMinRestOverMessage,
+                        timePartiallyEndSecs * 1000
+                    )
 
-                fullProgressMax in (previousProgress + 1)..progress && fullProgressMax != 0L -> notificationManager.createRestNotificationBuilder()
-                    .setContentTitle(translations.workoutPersistentNotificationMaxRestOverMessage)
-                    .build()
+                fullProgressMax in (previousProgress + 1)..progress && fullProgressMax != 0L ->
+                    notificationManager.createRestAlarmNotification(
+                        translations.workoutPersistentNotificationMaxRestOverMessage,
+                        timeEndSecs * 1000
+                    )
 
                 else -> null
             }
             if (restNotif != null) {
-                // Repeat the sound and vibration until the user silences it: from the app, by
-                // tapping or swiping the notification, or by opening the notification shade.
-                restNotif.flags = restNotif.flags or Notification.FLAG_INSISTENT
                 notificationManager.notifyRest(restNotif)
             }
             @Suppress("AssignedValueIsNeverRead")

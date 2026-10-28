@@ -1,15 +1,16 @@
-# Builds an installable APK of this personal fork. It uses a separate app ID
-# (com.ronhall918.liftlog) so it installs alongside the official LiftLog.
+# Builds an installable APK of this personal fork and publishes it as a GitHub Release, which
+# (unlike workflow artifacts) never expires. It uses a separate app ID (com.ronhall918.liftlog)
+# so it installs alongside the official LiftLog.
 name: Personal APK
 on:
   workflow_dispatch:
   push:
-    branches-ignore: [main]
+    branches: [main]
     paths:
       - app/**
       - .github/workflows/personal-apk.yml
 permissions:
-  contents: read
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -50,9 +51,25 @@ jobs:
         run: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a -PBUILD_NUMBER=${{ github.run_number }}
         working-directory: ./app/android
 
+      - name: Name APK
+        run: cp app/android/app/build/outputs/apk/release/app-release.apk my-liftlog-${{ github.run_number }}.apk
+
       - name: Upload APK
         uses: actions/upload-artifact@v7
         with:
           name: liftlog-apk-${{ github.run_number }}
-          path: app/android/app/build/outputs/apk/release/*.apk
+          path: my-liftlog-${{ github.run_number }}.apk
           if-no-files-found: error
+
+      - name: Publish release
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: My LiftLog build ${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          make_latest: true
+          body: |
+            Installable APK of My LiftLog built from ${{ github.sha }}.
+            Download the .apk below on your phone and install it over the existing My LiftLog.
+          files: my-liftlog-${{ github.run_number }}.apk
+          fail_on_unmatched_files: true
